@@ -26,4 +26,25 @@ class FreeTsaServiceProvider extends PackageServiceProvider
     {
         $this->app->singleton(FreeTsa::class, fn (): FreeTsa => new FreeTsa);
     }
+
+    public function packageBooted(): void
+    {
+        if (! $this->app->runningInConsole()) {
+            return;
+        }
+
+        $this->publishTagAlias('freetsa-config', 'laravel-freetsa-config');
+        $this->publishTagAlias('freetsa-migrations', 'laravel-freetsa-migrations');
+    }
+
+    protected function publishTagAlias(string $sourceTag, string $targetTag): void
+    {
+        $paths = static::pathsToPublish(static::class, $sourceTag);
+
+        if ($paths === []) {
+            return;
+        }
+
+        $this->publishes($paths, $targetTag);
+    }
 }

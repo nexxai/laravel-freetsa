@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Schema;
 use Nexxai\FreeTsa\Exceptions\MissingCertificatesException;
+use Nexxai\FreeTsa\FreeTsaServiceProvider;
 use Nexxai\FreeTsa\Models\FreeTsaTimestamp;
 use Nexxai\FreeTsa\Tests\Fixtures\Document;
 
@@ -82,4 +83,12 @@ it('downloads certificates with the artisan command', function (): void {
         ->toBe('tsa-certificate-data')
         ->and(File::get(config('freetsa.certificates.directory').'/'.config('freetsa.certificates.ca_file')))
         ->toBe('ca-certificate-data');
+});
+
+it('publishes config and migrations using documented tags', function (): void {
+    $migrationPaths = FreeTsaServiceProvider::pathsToPublish(FreeTsaServiceProvider::class, 'laravel-freetsa-migrations');
+    $configPaths = FreeTsaServiceProvider::pathsToPublish(FreeTsaServiceProvider::class, 'laravel-freetsa-config');
+
+    expect($migrationPaths)->not->toBeEmpty()
+        ->and($configPaths)->not->toBeEmpty();
 });
