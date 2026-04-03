@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.1](https://github.com/nexxai/laravel-freetsa/compare/v1.0.0...v1.0.1) (2026-04-03)
+
+
+### Bug Fixes
+
+* publish config and migration files ([1277e28](https://github.com/nexxai/laravel-freetsa/commit/1277e28b2c8441312a48597311a039ced444babc))
+
+
+### Miscellaneous Chores
+
+* phpactor config ([1fa53b1](https://github.com/nexxai/laravel-freetsa/commit/1fa53b1f1ef44fe0d5aa86aa80aee40b85ac6c69))
+
 ## 1.0.0 (2026-04-03)
 
 
