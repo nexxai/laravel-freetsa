@@ -38,6 +38,23 @@ it('creates and stores timestamp query and response binaries', function (): void
     File::delete($filePath);
 });
 
+it('provides the freeTsaTimestamps relationship from the trait', function (): void {
+    $document = Document::create(['name' => 'Invoice']);
+
+    $timestamp = FreeTsaTimestamp::query()->create([
+        'file_name' => 'example.txt',
+        'hash_algorithm' => 'sha512',
+        'tsq_binary' => 'query-bytes',
+        'tsr_binary' => 'response-bytes',
+    ]);
+
+    $timestamp->timestampable()->associate($document);
+    $timestamp->save();
+
+    expect($document->freeTsaTimestamps)->toHaveCount(1)
+        ->and($document->freeTsaTimestamps->first()?->id)->toBe($timestamp->id);
+});
+
 it('verifies timestamp data with locally stored certificates', function (): void {
     Process::fake([
         '*' => Process::result(output: 'Verification: OK', exitCode: 0),

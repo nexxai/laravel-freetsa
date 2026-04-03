@@ -27,6 +27,17 @@ php artisan vendor:publish --tag="laravel-freetsa-migrations"
 php artisan migrate
 ```
 
+Add the package trait to your user model so it gets the `freeTsaTimestamps()` polymorphic relationship:
+
+```php
+use Nexxai\FreeTsa\Concerns\HasFreeTsaTimestamps;
+
+class User extends Authenticatable
+{
+    use HasFreeTsaTimestamps;
+}
+```
+
 You can publish the config file with:
 
 ```bash
@@ -85,17 +96,15 @@ The `free_tsa_timestamps` table includes a nullable polymorphic relation (`times
 
 ```php
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Nexxai\FreeTsa\Models\FreeTsaTimestamp;
+use Nexxai\FreeTsa\Concerns\HasFreeTsaTimestamps;
 
 class Invoice extends Model
 {
-    public function timestamps(): MorphMany
-    {
-        return $this->morphMany(FreeTsaTimestamp::class, 'timestampable');
-    }
+    use HasFreeTsaTimestamps;
 }
 ```
+
+After adding the trait, access records with `$user->freeTsaTimestamps` (or call `$user->freeTsaTimestamps()` for the relation query).
 
 ## Testing
 
