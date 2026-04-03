@@ -2,9 +2,9 @@
 
 namespace Nexxai\FreeTsa;
 
+use Nexxai\FreeTsa\Commands\FreeTsaCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Nexxai\FreeTsa\Commands\FreeTsaCommand;
 
 class FreeTsaServiceProvider extends PackageServiceProvider
 {
@@ -18,8 +18,12 @@ class FreeTsaServiceProvider extends PackageServiceProvider
         $package
             ->name('laravel-freetsa')
             ->hasConfigFile()
-            ->hasViews()
-            ->hasMigration('create_laravel_freetsa_table')
+            ->hasMigration('create_free_tsa_timestamps_table')
             ->hasCommand(FreeTsaCommand::class);
+    }
+
+    public function registeringPackage(): void
+    {
+        $this->app->singleton(FreeTsa::class, fn (): FreeTsa => new FreeTsa);
     }
 }
