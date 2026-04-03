@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace Nexxai\FreeTsa\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class FreeTsaCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'laravel-freetsa';
 
     public $description = 'My command';
 
