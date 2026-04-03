@@ -98,6 +98,24 @@ class Invoice extends Model
 composer test
 ```
 
+## Releases
+
+This package uses Release Please to create and publish semver releases from `main`.
+
+Use Conventional Commits in merged PRs so the version bump is predictable:
+
+- `fix: ...` -> patch release (`x.y.Z`)
+- `feat: ...` -> minor release (`x.Y.0`)
+- `feat!: ...` or a `BREAKING CHANGE:` footer -> major release (`X.0.0`)
+
+Example:
+
+```text
+feat: add certificate download command
+fix: handle missing cert files before verify
+feat!: rename timestampFile API to createFromFile
+```
+
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
