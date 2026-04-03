@@ -7,6 +7,11 @@
 
 * adding trait ([59418a5](https://github.com/nexxai/laravel-freetsa/commit/59418a54c13973eb970e03723f3bb3885beffd31))
 
+### Upgrade Notes
+
+* Models that should own timestamp records must use `Nexxai\FreeTsa\Concerns\HasFreeTsaTimestamps`.
+* Add this trait to your `User` model (or any owning model) during installation.
+
 
 ### Bug Fixes
 
