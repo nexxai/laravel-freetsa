@@ -9,6 +9,11 @@
 
 ## Installation
 
+### Requirements
+
+- PHP must be able to execute an `openssl` CLI binary for RFC 3161 verification.
+- By default this package calls `openssl` from your `PATH`; set `FREETSA_OPENSSL_BINARY` if your binary lives elsewhere.
+
 You can install the package via composer:
 
 ```bash
