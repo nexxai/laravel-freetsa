@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Nexxai\FreeTsa\FreeTsa;
 
+/**
+ * @property string $tsq_binary
+ * @property string $tsr_binary
+ */
 class FreeTsaTimestamp extends Model
 {
     protected $table = 'free_tsa_timestamps';
