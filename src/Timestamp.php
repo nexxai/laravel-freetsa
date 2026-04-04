@@ -437,7 +437,7 @@ class Timestamp
 
         preg_match_all('/-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----/s', $result->output(), $matches);
 
-        if (($matches[0] ?? []) === []) {
+        if ($matches[0] === []) {
             return null;
         }
 
