@@ -1,0 +1,27 @@
+{
+    "name": "laravel-rfc3161",
+    "version": "2.0.0",
+    "description": "A Laravel package for RFC3161 timestamping.",
+    "repository": "github:nexxai/laravel-rfc3161",
+    "dependencies": {},
+    "devDependencies": {
+        "semantic-release": "^25.0.3"
+    },
+    "release": {
+        "plugins": [
+            "@semantic-release/commit-analyzer",
+            "@semantic-release/release-notes-generator",
+            [
+                "@semantic-release/github",
+                {
+                    "assets": [
+                        "release/**"
+                    ]
+                }
+            ]
+        ]
+    },
+    "scripts": {
+        "release": "semantic-release"
+    }
+}
