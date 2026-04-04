@@ -42,6 +42,11 @@ class DigiCert implements TimestampProvider
             [
                 'file' => 'DigiCertTrustedRootG4.cer',
                 'url' => 'https://knowledge.digicert.com/content/dam/kb/attachments/time-stamp/DigiCertTrustedRootG4.cer',
+                'trust' => false,
+            ],
+            [
+                'file' => 'DigiCertAssuredIDRootCA.crt.pem',
+                'url' => 'https://cacerts.digicert.com/DigiCertAssuredIDRootCA.crt.pem',
                 'trust' => true,
             ],
         ];

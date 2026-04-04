@@ -69,7 +69,7 @@ Set `TIMESTAMP_PROVIDER` to a provider class (for example `Nexxai\\Rfc3161\\Prov
 
 When overriding the provider in code, pass a provider object (for example `new DigiCert()`).
 
-Before any timestamp verification, download and store certificates for your provider:
+Before timestamp verification, download and store trusted certificates for your provider:
 
 ```bash
 php artisan timestamp:download-certificates
@@ -77,7 +77,9 @@ php artisan timestamp:download-certificates
 
 If certificates are missing, verification will throw an exception with this command.
 
-When `TIMESTAMP_VALIDATE_CERTIFICATE_CHAIN=true`, the package validates each certificate and verifies the chain up to trusted root certificates before timestamp requests and verification. If the chain is invalid, it attempts one fresh re-download for that provider and throws an exception if validation still fails.
+The package requests certificate inclusion in each TSQ (`-cert`) and, during verification, prefers the certificate chain embedded in the TSR for per-response validation. Local provider certificates are used as trust anchors (`-CAfile`) and as a fallback untrusted chain when a TSR does not include certificates.
+
+When `TIMESTAMP_VALIDATE_CERTIFICATE_CHAIN=true`, the package validates trusted local certificates before requests and verification. If validation fails, it attempts one fresh re-download for that provider and throws an exception if validation still fails.
 
 ## Usage
 

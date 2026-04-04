@@ -191,6 +191,37 @@ it('throws when certificate chain validation cannot recover', function (): void 
         ->toThrow(InvalidCertificateChainException::class);
 });
 
+it('prefers embedded certificates from the timestamp response when verifying', function (): void {
+    config()->set('timestamp.validate_certificate_chain', false);
+
+    File::put(config('timestamp.certificates.directory').'/cacert.pem', 'trusted-certificate');
+
+    Process::fake([
+        '*ts -reply*pkcs7 -inform DER -print_certs*' => Process::result(
+            output: "subject=/CN=Timestamp Issuer\n-----BEGIN CERTIFICATE-----\nMIIB\n-----END CERTIFICATE-----\n",
+            exitCode: 0,
+        ),
+        '*ts -verify*' => Process::result(output: 'Verification: OK', exitCode: 0),
+        '*' => Process::result(exitCode: 0),
+    ]);
+
+    $timestamp = Timestamp::query()->create([
+        'provider' => FreeTsa::class,
+        'file_name' => 'example.txt',
+        'hash_algorithm' => 'sha512',
+        'tsq_binary' => 'query-bytes',
+        'tsr_binary' => 'response-bytes',
+    ]);
+
+    expect($timestamp->verify())->toBeTrue();
+
+    Process::assertRan(fn ($process): bool => str_contains($process->command, 'ts -reply')
+        && str_contains($process->command, 'pkcs7 -inform DER -print_certs'));
+
+    Process::assertRan(fn ($process): bool => str_contains($process->command, 'ts -verify')
+        && str_contains($process->command, ' -untrusted '));
+});
+
 it('publishes config and migrations using documented tags', function (): void {
     $migrationPaths = TimestampServiceProvider::pathsToPublish(TimestampServiceProvider::class, 'rfc3161-migrations');
     $configPaths = TimestampServiceProvider::pathsToPublish(TimestampServiceProvider::class, 'rfc3161-config');

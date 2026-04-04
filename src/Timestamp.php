@@ -70,8 +70,20 @@ class Timestamp
         File::put($tsrPath, $responseData);
 
         $trustedBundlePath = $this->temporaryBundlePath($this->trustedCertificatePaths($provider));
-        $untrustedPaths = $this->untrustedCertificatePaths($provider);
-        $untrustedBundlePath = $untrustedPaths === [] ? null : $this->temporaryBundlePath($untrustedPaths);
+        $embeddedCertificateChain = $this->extractEmbeddedCertificates($tsrPath);
+        $untrustedBundlePath = $embeddedCertificateChain === null ? null : $this->temporaryBundleFromString($embeddedCertificateChain);
+
+        if ($untrustedBundlePath === null) {
+            $untrustedPaths = $this->untrustedCertificatePaths($provider);
+
+            foreach ($untrustedPaths as $path) {
+                if (! File::exists($path)) {
+                    throw MissingCertificatesException::make($provider->key());
+                }
+            }
+
+            $untrustedBundlePath = $untrustedPaths === [] ? null : $this->temporaryBundlePath($untrustedPaths);
+        }
 
         try {
             return Process::run($this->buildVerifyCommand($tsqPath, $tsrPath, $trustedBundlePath, $untrustedBundlePath))->successful();
@@ -159,6 +171,30 @@ class Timestamp
         $provider ??= app(TimestampProvider::class);
 
         if ($this->certificatesExist($provider)) {
+            return;
+        }
+
+        throw MissingCertificatesException::make($provider->key());
+    }
+
+    public function trustedCertificatesExist(?TimestampProvider $provider = null): bool
+    {
+        $provider = $this->provider($provider);
+
+        foreach ($this->trustedCertificatePaths($provider) as $path) {
+            if (! File::exists($path)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function ensureTrustedCertificatesExist(?TimestampProvider $provider = null): void
+    {
+        $provider ??= app(TimestampProvider::class);
+
+        if ($this->trustedCertificatesExist($provider)) {
             return;
         }
 
@@ -318,7 +354,7 @@ class Timestamp
     {
         if (! (bool) config('timestamp.validate_certificate_chain', true)) {
             if ($requireCertificatesWhenValidationDisabled) {
-                $this->ensureCertificatesExist($provider);
+                $this->ensureTrustedCertificatesExist($provider);
             }
 
             return;
@@ -353,37 +389,23 @@ class Timestamp
     /** @phpstan-impure */
     protected function certificateChainIsValid(TimestampProvider $provider): bool
     {
-        if (! $this->certificatesExist($provider)) {
+        $trustedPaths = $this->trustedCertificatePaths($provider);
+
+        if ($trustedPaths === []) {
             return false;
         }
 
-        foreach ($this->certificatePaths($provider) as $path) {
+        foreach ($trustedPaths as $path) {
+            if (! File::exists($path)) {
+                return false;
+            }
+
             if (! Process::run($this->buildCertificateCheckCommand($path))->successful()) {
                 return false;
             }
         }
 
-        $trustedPaths = $this->trustedCertificatePaths($provider);
-        $untrustedPaths = $this->untrustedCertificatePaths($provider);
-        $leafPath = $untrustedPaths[0] ?? $trustedPaths[0] ?? null;
-
-        if ($leafPath === null) {
-            return false;
-        }
-
-        $trustedBundlePath = $this->temporaryBundlePath($trustedPaths);
-        $untrustedBundlePath = null;
-        $intermediatePaths = array_slice($untrustedPaths, 1);
-
-        if ($intermediatePaths !== []) {
-            $untrustedBundlePath = $this->temporaryBundlePath($intermediatePaths);
-        }
-
-        try {
-            return Process::run($this->buildChainVerifyCommand($leafPath, $trustedBundlePath, $untrustedBundlePath))->successful();
-        } finally {
-            File::delete(array_filter([$trustedBundlePath, $untrustedBundlePath]));
-        }
+        return true;
     }
 
     protected function buildCertificateCheckCommand(string $certificatePath): string
@@ -395,19 +417,39 @@ class Timestamp
         );
     }
 
-    protected function buildChainVerifyCommand(string $leafPath, string $trustedBundlePath, ?string $untrustedBundlePath): string
+    protected function buildExtractEmbeddedCertificatesCommand(string $responsePath): string
     {
-        $command = sprintf(
-            '%s verify -purpose any -CAfile %s',
+        return sprintf(
+            '%s ts -reply -in %s -token_out | %s pkcs7 -inform DER -print_certs',
             escapeshellarg((string) config('timestamp.openssl_binary', 'openssl')),
-            escapeshellarg($trustedBundlePath),
+            escapeshellarg($responsePath),
+            escapeshellarg((string) config('timestamp.openssl_binary', 'openssl')),
         );
+    }
 
-        if ($untrustedBundlePath !== null) {
-            $command .= ' -untrusted '.escapeshellarg($untrustedBundlePath);
+    protected function extractEmbeddedCertificates(string $responsePath): ?string
+    {
+        $result = Process::run($this->buildExtractEmbeddedCertificatesCommand($responsePath));
+
+        if (! $result->successful()) {
+            return null;
         }
 
-        return $command.' '.escapeshellarg($leafPath);
+        preg_match_all('/-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----/s', $result->output(), $matches);
+
+        if (($matches[0] ?? []) === []) {
+            return null;
+        }
+
+        return implode(PHP_EOL, $matches[0]).PHP_EOL;
+    }
+
+    protected function temporaryBundleFromString(string $bundle): string
+    {
+        $bundlePath = $this->temporaryFilePath('pem');
+        File::put($bundlePath, $bundle);
+
+        return $bundlePath;
     }
 
     /**
