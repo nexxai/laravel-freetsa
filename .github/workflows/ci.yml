@@ -3,20 +3,20 @@ name: ci
 on:
   push:
     paths:
-      - '**.php'
-      - 'phpstan.neon.dist'
-      - 'phpunit.xml.dist'
-      - 'composer.json'
-      - 'composer.lock'
-      - '.github/workflows/ci.yml'
+      - "**.php"
+      - "phpstan.neon.dist"
+      - "phpunit.xml.dist"
+      - "composer.json"
+      - "composer.lock"
+      - ".github/workflows/ci.yml"
   pull_request:
     paths:
-      - '**.php'
-      - 'phpstan.neon.dist'
-      - 'phpunit.xml.dist'
-      - 'composer.json'
-      - 'composer.lock'
-      - '.github/workflows/ci.yml'
+      - "**.php"
+      - "phpstan.neon.dist"
+      - "phpunit.xml.dist"
+      - "composer.json"
+      - "composer.lock"
+      - ".github/workflows/ci.yml"
   pull_request_target:
     types:
       - opened
@@ -36,12 +36,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: "8.4"
           coverage: none
 
       - name: Install dependencies
@@ -75,7 +75,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -112,7 +112,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Create release
         uses: cycjimmy/semantic-release-action@v6
