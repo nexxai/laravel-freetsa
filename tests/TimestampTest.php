@@ -169,6 +169,16 @@ it('uses configured default provider when no provider is passed', function (): v
 it('throws when certificate chain validation cannot recover', function (): void {
     config()->set('timestamp.validate_certificate_chain', true);
 
+    $provider = new DigiCert;
+
+    File::deleteDirectory(config('timestamp.certificates.directory').'/'.$provider->key());
+
+    $invalidCertificate = File::get(__DIR__.'/Fixtures/certificates/invalid-certificate.pem');
+
+    Http::fake([
+        '*' => Http::response($invalidCertificate, 200),
+    ]);
+
     $timestamp = Timestamp::query()->create([
         'provider' => DigiCert::class,
         'file_name' => 'example.txt',
