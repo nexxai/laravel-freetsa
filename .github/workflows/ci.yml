@@ -45,7 +45,7 @@ jobs:
           coverage: none
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-interaction --no-dev
+        run: composer install --no-interaction
 
       - name: Check code style
         run: ./vendor/bin/pint --test
