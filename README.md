@@ -81,6 +81,18 @@ When `TIMESTAMP_VALIDATE_CERTIFICATE_CHAIN=true`, the package validates each cer
 
 ## Usage
 
+`timestampFile()` is a method on the Eloquent model (`Nexxai\Rfc3161\Models\Timestamp`), not the facade (`Nexxai\Rfc3161\Facades\Timestamp`).
+
+If you need both in the same file, alias them so calls stay explicit:
+
+```php
+use Nexxai\Rfc3161\Models\Timestamp as TimestampRecord;
+use Nexxai\Rfc3161\Facades\Timestamp as TimestampFacade;
+
+$timestamp = TimestampRecord::timestampFile($filePath, $invoice);
+$rawResponse = TimestampFacade::requestTimestamp($filePath);
+```
+
 ```php
 use App\Models\Invoice;
 use Nexxai\Rfc3161\Models\Timestamp;
