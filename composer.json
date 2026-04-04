@@ -1,12 +1,13 @@
 {
-    "name": "nexxai/laravel-freetsa",
-    "description": "A simple FreeTSA package for Laravel ",
+    "name": "nexxai/laravel-rfc3161",
+    "description": "A Laravel package for creating RFC 3161 compliant timestamps",
     "keywords": [
         "nexxai",
         "laravel",
-        "laravel-freetsa"
+        "rfc3161",
+        "timestamp"
     ],
-    "homepage": "https://github.com/nexxai/laravel-freetsa",
+    "homepage": "https://github.com/nexxai/laravel-rfc3161",
     "license": "MIT",
     "authors": [
         {
