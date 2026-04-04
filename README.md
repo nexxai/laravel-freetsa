@@ -1,110 +1,116 @@
-# Laravel FreeTSA
+# Laravel RFC3161
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/nexxai/laravel-freetsa.svg?style=flat-square)](https://packagist.org/packages/nexxai/laravel-freetsa)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/nexxai/laravel-freetsa/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/nexxai/laravel-freetsa/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/nexxai/laravel-freetsa/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/nexxai/laravel-freetsa/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/nexxai/laravel-freetsa.svg?style=flat-square)](https://packagist.org/packages/nexxai/laravel-freetsa)
 
-`nexxai/laravel-freetsa` is a thin Laravel interface for [freeTSA.org](https://freetsa.org/index_en.php). It creates RFC 3161 timestamp requests, sends them to FreeTSA, stores the request/response binary payloads, and verifies responses with FreeTSA certificates.
+`nexxai/laravel-rfc3161` is a thin Laravel interface for RFC 3161 timestamp providers. It creates timestamp requests, sends them to your selected provider, stores the request/response binary payloads, and verifies responses with provider-specific certificates.
+
+## Breaking Changes
+
+- The package namespace changed from `Nexxai\\FreeTsa\\...` to `Nexxai\\Rfc3161\\...`.
+- Update all imports, config class references, and type hints to the new namespace.
 
 ## Installation
 
 ### Requirements
 
 - PHP must be able to execute an `openssl` CLI binary for RFC 3161 verification.
-- By default this package calls `openssl` from your `PATH`; set `FREETSA_OPENSSL_BINARY` if your binary lives elsewhere.
+- By default this package calls `openssl` from your `PATH`; set `TIMESTAMP_OPENSSL_BINARY` if your binary lives elsewhere.
 
 You can install the package via composer:
 
 ```bash
-composer require nexxai/laravel-freetsa
+composer require nexxai/laravel-rfc3161
 ```
 
 You can publish and run the migrations with:
 
 ```bash
-php artisan vendor:publish --tag="laravel-freetsa-migrations"
+php artisan vendor:publish --tag="rfc3161-migrations"
 php artisan migrate
 ```
 
-Add the package trait to your user model so it gets the `freeTsaTimestamps()` polymorphic relationship:
+Add the package trait to your model so it gets the `timestampRecords()` polymorphic relationship:
 
 ```php
-use Nexxai\FreeTsa\Concerns\HasFreeTsaTimestamps;
+use Nexxai\Rfc3161\Concerns\HasRfc3161Timestamps;
 
 class User extends Authenticatable
 {
-    use HasFreeTsaTimestamps;
+    use HasRfc3161Timestamps;
 }
 ```
 
 You can publish the config file with:
 
 ```bash
-php artisan vendor:publish --tag="laravel-freetsa-config"
+php artisan vendor:publish --tag="rfc3161-config"
 ```
 
 This is the contents of the published config file:
 
 ```php
 return [
-    'endpoint' => env('FREETSA_ENDPOINT', 'https://freetsa.org/tsr'),
-    'hash_algorithm' => env('FREETSA_HASH_ALGORITHM', 'sha512'),
-    'openssl_binary' => env('FREETSA_OPENSSL_BINARY', 'openssl'),
+    'default_provider' => env('TIMESTAMP_PROVIDER', \Nexxai\Rfc3161\Providers\FreeTsa::class),
+    'hash_algorithm' => env('TIMESTAMP_HASH_ALGORITHM', 'sha512'),
+    'openssl_binary' => env('TIMESTAMP_OPENSSL_BINARY', 'openssl'),
+    'validate_certificate_chain' => env('TIMESTAMP_VALIDATE_CERTIFICATE_CHAIN', true),
     'certificates' => [
-        'directory' => env('FREETSA_CERTIFICATES_DIRECTORY', storage_path('app/freetsa/certificates')),
-        'tsa_url' => env('FREETSA_TSA_CERTIFICATE_URL', 'https://freetsa.org/files/tsa.crt'),
-        'ca_url' => env('FREETSA_CA_CERTIFICATE_URL', 'https://freetsa.org/files/cacert.pem'),
-        'tsa_file' => env('FREETSA_TSA_CERTIFICATE_FILE', 'tsa.crt'),
-        'ca_file' => env('FREETSA_CA_CERTIFICATE_FILE', 'cacert.pem'),
+        'directory' => env('TIMESTAMP_CERTIFICATES_DIRECTORY', storage_path('app/timestamp/certificates')),
     ],
 ];
 ```
 
-Before any timestamp verification, download and store FreeTSA certificates:
+Provider endpoints and certificate chains are built into provider classes and are not user-configurable.
+
+Set `TIMESTAMP_PROVIDER` to a provider class (for example `Nexxai\\Rfc3161\\Providers\\DigiCert`) to choose the default provider.
+
+When overriding the provider in code, pass a provider object (for example `new DigiCert()`).
+
+Before any timestamp verification, download and store certificates for your provider:
 
 ```bash
-php artisan freetsa:download-certificates
+php artisan timestamp:download-certificates
 ```
 
 If certificates are missing, verification will throw an exception with this command.
+
+When `TIMESTAMP_VALIDATE_CERTIFICATE_CHAIN=true`, the package validates each certificate and verifies the chain up to trusted root certificates before timestamp requests and verification. If the chain is invalid, it attempts one fresh re-download for that provider and throws an exception if validation still fails.
 
 ## Usage
 
 ```php
 use App\Models\Invoice;
-use Nexxai\FreeTsa\Models\FreeTsaTimestamp;
+use Nexxai\Rfc3161\Models\Timestamp;
+use Nexxai\Rfc3161\Providers\DigiCert;
 
 $invoice = Invoice::findOrFail(1);
 
-// Creates a TSQ from file content, sends it to FreeTSA, and stores TSQ/TSR binary payloads.
-$timestamp = FreeTsaTimestamp::timestampFile(
+// Creates a TSQ from file content, sends it to your configured default provider, and stores TSQ/TSR binary payloads.
+$timestamp = Timestamp::timestampFile(
     storage_path('app/invoices/invoice-2026-04.pdf'),
     $invoice,
 );
 
-// Verify stored query and response with locally downloaded FreeTSA certificates.
+// You can choose a specific provider per request.
+$timestamp = Timestamp::timestampFile(
+    storage_path('app/invoices/invoice-2026-04.pdf'),
+    $invoice,
+    new DigiCert(),
+);
+
+// Verify stored query and response with locally downloaded provider certificates.
 $isValid = $timestamp->verify();
 
 // You can also verify explicit query/response data.
 $isValid = $timestamp->verify($customTsqBinary, $customTsrBinary);
 ```
 
-The `free_tsa_timestamps` table includes a nullable polymorphic relation (`timestampable_type`, `timestampable_id`) so any Eloquent model can own many timestamp records.
+The `timestamps` table includes a nullable polymorphic relation (`timestampable_type`, `timestampable_id`) so any Eloquent model can own many timestamp records.
 
-### Polymorphic relationship example
-
-```php
-use Illuminate\Database\Eloquent\Model;
-use Nexxai\FreeTsa\Concerns\HasFreeTsaTimestamps;
-
-class Invoice extends Model
-{
-    use HasFreeTsaTimestamps;
-}
-```
-
-After adding the trait, access records with `$user->freeTsaTimestamps` (or call `$user->freeTsaTimestamps()` for the relation query).
+After adding the trait, access records with `$user->timestampRecords` (or call `$user->timestampRecords()` for the relation query).
 
 ## Testing
 

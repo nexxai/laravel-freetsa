@@ -1,13 +1,13 @@
 <?php
 
-namespace Nexxai\FreeTsa\Tests\Fixtures;
+namespace Nexxai\Rfc3161\Tests\Fixtures;
 
 use Illuminate\Database\Eloquent\Model;
-use Nexxai\FreeTsa\Concerns\HasFreeTsaTimestamps;
+use Nexxai\Rfc3161\Concerns\HasRfc3161Timestamps;
 
 class Document extends Model
 {
-    use HasFreeTsaTimestamps;
+    use HasRfc3161Timestamps;
 
     protected $guarded = [];
 

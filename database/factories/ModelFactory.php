@@ -1,6 +1,6 @@
 <?php
 
-namespace Nexxai\FreeTsa\Database\Factories;
+namespace Nexxai\Rfc3161\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 

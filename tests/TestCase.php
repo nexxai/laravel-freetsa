@@ -1,10 +1,10 @@
 <?php
 
-namespace Nexxai\FreeTsa\Tests;
+namespace Nexxai\Rfc3161\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\File;
-use Nexxai\FreeTsa\FreeTsaServiceProvider;
+use Nexxai\Rfc3161\TimestampServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
@@ -14,14 +14,14 @@ class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Nexxai\\FreeTsa\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName) => 'Nexxai\\Rfc3161\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
     }
 
     protected function getPackageProviders($app)
     {
         return [
-            FreeTsaServiceProvider::class,
+            TimestampServiceProvider::class,
         ];
     }
 
@@ -34,9 +34,10 @@ class TestCase extends Orchestra
             'prefix' => '',
         ]);
 
-        config()->set('freetsa.certificates.directory', sys_get_temp_dir().'/laravel-freetsa-tests/certificates');
+        config()->set('timestamp.certificates.directory', sys_get_temp_dir().'/laravel-freetsa-tests/certificates');
+        config()->set('timestamp.validate_certificate_chain', false);
 
-        File::ensureDirectoryExists(config('freetsa.certificates.directory'));
+        File::ensureDirectoryExists(config('timestamp.certificates.directory'));
 
         foreach (File::allFiles(__DIR__.'/../database/migrations') as $migration) {
             (include $migration->getRealPath())->up();

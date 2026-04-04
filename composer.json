@@ -38,13 +38,13 @@
     },
     "autoload": {
         "psr-4": {
-            "Nexxai\\FreeTsa\\": "src/",
-            "Nexxai\\FreeTsa\\Database\\Factories\\": "database/factories/"
+            "Nexxai\\Rfc3161\\": "src/",
+            "Nexxai\\Rfc3161\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Nexxai\\FreeTsa\\Tests\\": "tests/",
+            "Nexxai\\Rfc3161\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/"
         }
     },
@@ -66,10 +66,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Nexxai\\FreeTsa\\FreeTsaServiceProvider"
+                "Nexxai\\Rfc3161\\TimestampServiceProvider"
             ],
             "aliases": {
-                "FreeTsa": "Nexxai\\FreeTsa\\Facades\\FreeTsa"
+                "Timestamp": "Nexxai\\Rfc3161\\Facades\\Timestamp"
             }
         }
     },

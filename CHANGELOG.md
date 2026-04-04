@@ -9,7 +9,7 @@
 
 ### Upgrade Notes
 
-* Models that should own timestamp records must use `Nexxai\FreeTsa\Concerns\HasFreeTsaTimestamps`.
+* Models that should own timestamp records must use `Nexxai\Rfc3161\Concerns\HasRfc3161Timestamps`.
 * Add this trait to your `User` model (or any owning model) during installation.
 
 

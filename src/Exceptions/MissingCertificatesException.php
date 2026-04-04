@@ -1,13 +1,13 @@
 <?php
 
-namespace Nexxai\FreeTsa\Exceptions;
+namespace Nexxai\Rfc3161\Exceptions;
 
 use RuntimeException;
 
 class MissingCertificatesException extends RuntimeException
 {
-    public static function make(): self
+    public static function make(string $provider = 'freetsa'): self
     {
-        return new self('FreeTSA certificates are missing. Run [php artisan freetsa:download-certificates] before verifying timestamps.');
+        return new self("[{$provider}] certificates are missing. Run [php artisan timestamp:download-certificates] before verifying timestamps.");
     }
 }
